@@ -2,6 +2,7 @@
   {
     "name": "armor_base_armor",
     "then": ["armor_basic_magic_armor","runes_armor_property_runes","armor_precious_material_armor"],
+    "thenWeights": [90,40,20],
     "weight":66
   },
   {

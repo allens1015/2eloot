@@ -6,7 +6,7 @@ use Data::Dumper;
 my ($cache,$cs_word);
 my $level = 1;
 my $xp = "l";
-my $players = 4;
+my $price = 0;
 my $type = "armor";
 use constant{
   DATAPATH => "data/processed/"
@@ -15,7 +15,7 @@ use constant{
 foreach my $arg (@ARGV) {
 	if($arg =~ /--l=(\d+)/) { $level = $1; }
   if($arg =~ /--xp=([lmseLMSE])/) { $xp = $1; }
-  if($arg =~ /--p=(\d+)/) { $players = $1; }
+  if($arg =~ /--p=(\d+)/) { $price = $1; }
   if($arg =~ /--t=(.*)/) { $type = $1; }
   if($arg =~ /--cache/) { $cache = 1; }
 }
@@ -36,8 +36,8 @@ my @te_arr = @{$te_json};
 my $selected_te = $te_arr[$level-1];
 my $selected_price_limit = $selected_te->{$xp_word};
 my $selected_price_limit_int = &price_to_int($selected_price_limit);
-if($p) {
-  $selected_price_limit_int = int($p);
+if($price) {
+  $selected_price_limit_int = int($price);
 }
 
 # set default aliases and maps
@@ -72,6 +72,7 @@ while($remaining_price > 0) {
     # get the map result
     my $selected_row = &get_map_result($origin_filepath);
     my $then = $selected_row->{then};
+    my $then_weights_str = $selected_row->{thenWeights};
     # print "picked a row...\n";
     # print Dumper $selected_row;
 
@@ -81,10 +82,39 @@ while($remaining_price > 0) {
       print "can't find loot table path $loot_table_path from type $type\n";
     }
     my $selected_loot_str;
-    ($selected_loot_str,$remaining_price) = &roll_for_loot($loot_table_path,$remaining_price,$level,$then);
+    ($selected_loot_str,$remaining_price) = &roll_for_loot($loot_table_path,$remaining_price,$level);
     if($selected_loot_str) {
       # print "remaining price dropped to $remaining_price\n";
       push(@loot, $selected_loot_str);
+    }
+    if($then) {
+      my @thens = @{$then};
+      my @then_weights = @{$then_weights_str};
+      my $then_count = 0;
+      foreach my $clause (@thens) {
+        my $then_roll = &rng(100)+1;
+        my $valid_then = 1 if $then_roll <= $then_weights[$then_count];
+
+        if($valid_then) {
+          my $temp_remaining_price = $remaining_price;
+          my $valid = 1;
+          $loot_table_path = DATAPATH.$clause.".json";
+          unless(-e $loot_table_path) {
+            print "can't find loot table path $loot_table_path from type $type\n";
+          }
+
+          ($selected_loot_str,$temp_remaining_price) = &roll_for_loot($loot_table_path,$remaining_price,$level);
+
+          undef $valid if $loot[-1] eq $selected_loot_str;
+
+          if($selected_loot_str && $valid) {
+            $remaining_price = $temp_remaining_price;
+            push(@loot,$selected_loot_str);
+          }
+        }
+        
+        $then_count++;
+      }
     }
   }
   else {
@@ -99,14 +129,14 @@ while($remaining_price > 0) {
     }
   }
 
-
   $i++;
 }
 
 # display
 # print Dumper $selected_te;
 # print "xp: $xp_word\n";
-# print Dumper @loot;
+print Dumper @loot;
+print "Remaining money: $remaining_price gp\n";
 # print "price limit gp: $selected_price_limit\n";
 # print "price limit int: $selected_price_limit_int\n";
 
@@ -141,16 +171,14 @@ sub get_map_result {
 
 # ------------------------------
 sub roll_for_loot {
-  my ($filepath,$remaining_price,$level,$then_str,$ignore_price) = @_;
+  my ($filepath,$remaining_price,$level) = @_;
 
   my $loot_str;
   my $table_str = &get_json($filepath);
   my $table_json = decode_json($table_str);
   my @raw_table = @{$table_json};
-  my @then = @{$then_str};
   my @level_gated_table;
   my @price_gated_table;
-  my $price_for_then = $remaining_price;
 
   # pull out the pieces we dont care about because they're level gated
   foreach my $row (@raw_table) {
@@ -165,14 +193,14 @@ sub roll_for_loot {
     $level_gated_table[$i] = $row;
     $i++;
   }
-  unless($ignore_price) {
-    # pull out the pieces we dont care about because we're price gated
-    foreach my $row (@level_gated_table) {
-      if($row->{int_price} <= $remaining_price) {
-        push(@price_gated_table,$row);
-      }
+  
+  # pull out the pieces we dont care about because we're price gated
+  foreach my $row (@level_gated_table) {
+    if($row->{int_price} <= $remaining_price) {
+      push(@price_gated_table,$row);
     }
   }
+  
   unless(scalar @price_gated_table) {
     @price_gated_table = @level_gated_table;
   }
@@ -191,9 +219,11 @@ sub roll_for_loot {
     my $common_count = 0;
     my $core_count = 0;
     my $done;
+
     while(!$done) {
       last if $loot_i > 0;
-      my $selection = &rng((scalar @sorted_table)-1);
+      my $sorted_table_len = (scalar @sorted_table)-1;
+      my $selection = &rng($sorted_table_len);
       # print "trying selection $selection...\n";
       # print Dumper $sorted_table[$selection];
       my $picked = $sorted_table[$selection];
@@ -230,41 +260,11 @@ sub roll_for_loot {
       $loot_i++;
     }
 
-    if(scalar @then) {
-      my @additional_str_clauses;
-      my $additional_str_clause;
-      foreach my $clause (@then) {
-        # print "applying then clause $clause...\n";
-        my $bonus_str;
-        my $price_after_then;
-        my $loot_table_path = DATAPATH."$clause.json";
-        unless(-e $loot_table_path) {
-          print "can't find loot table path $loot_table_path from type $type\n";
-        }
-        print "input into then with clause: $clause\n";
-        print "loot path=$loot_table_path, price=$price_for_then, level=$level, null str, 1\n\n";
-        ($bonus_str,$price_after_then) = &roll_for_loot($loot_table_path,$price_for_then,$level,"",1);
-        # print "BONII: $bonus_str //";
-        if($bonus_str) {
-          push(@additional_str_clauses, $bonus_str);
-        }
-      }
-      if(scalar @additional_str_clauses) {
-        foreach my $clause_test (@additional_str_clauses) {
-          # print "TESTING: '$clause_test'\t//\t";
-        }
-        # print "found one, ".scalar @additional_str_clauses." /// \n";
-        $additional_str_clause = join(" :: ",@additional_str_clauses);
-        $loot_str .= "\n\t // $additional_str_clause //";
-      }
-    }
-
-
     # print "was it done? $done\n";
     # print "did we hit a limit? $loot_i\n";
   }
 
-  print "Generated: $loot_str\n";
+  # print "Generated: $loot_str\n";
 
   return ($loot_str,$adjusted_price);
 }
@@ -306,7 +306,7 @@ sub price_to_int {
 
   my $int_price = $price_str;
   $int_price =~ s/,//;
-  $int_price =~ s/(\d+) gp/$1/;
+  $int_price =~ s/(\d+) gp(.*)/$1/;
 
   return int($int_price);
 }
@@ -325,7 +325,7 @@ sub get_xp_word {
 # ------------------------------
 sub rng {
   my ($max) = @_;
-  return int(rand($max))+1;
+  return int(rand($max));
 }
 
 # ------------------------------
