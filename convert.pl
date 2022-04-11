@@ -9,7 +9,7 @@ use JSON;
 # $input_file = "data/html_table/$input_file";
 my $output_file = $1.".json";
 
-foreach my $file (glob("data/html_table/*.html")) {
+foreach my $file (glob("data/html_table/wands_specialty_wands.html")) {
   my @data = &get_table_data($file);
   $file =~ /(.*).html/;
   my $output_file = $1.".json";
