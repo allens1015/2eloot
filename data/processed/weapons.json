@@ -1,0 +1,12 @@
+[
+  {
+    "name": "weapons_base_weapons",
+    "then": ["weapons_basic_magic_weapons","runes_weapon_property_runes","weapons_precious_material_weapons"],
+    "thenWeights": [90,40,20],
+    "weight":66
+  },
+  {
+    "name": "weapons_specific_magic_weapons",
+    "weight": 34
+  }
+]
