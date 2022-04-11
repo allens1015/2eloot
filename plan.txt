@@ -1,0 +1,84 @@
+so you wanna make an item generator
+i dont think booty boi does what i want it to, and it doesn't have enough source data to make me happy
+
+my gut reaction is to take each table from nethys and create a json and make it like tableroller
+we can create a perl or node script to grab all the json as one big ol boi split out into types and weight the types
+
+we can then apply a set of input args and maybe loot rules though probably not, right now this is for caches in small/med/large capacity based on level so maybe
+
+treasure by encounter is a good guide for this
+https://2e.aonprd.com/Rules.aspx?ID=988
+
+so we'll do it in perl because, then spend some time porting, because i need this now not later
+
+weapons are interesting...
+so are scrolls
+
+so for weapons youd need to assume either a base magic weapon or a specific one
+then roll for possible special materials if you fit the budget
+
+there's an argument to be made that we should be accounting for subtypes with a subtype map
+if i add consumables and alchemical items to the list, i should be weighting scrolls and potions more highly than fulu and gadgets
+
+the question is whether i do thisi up front in files or whether i ingest the whole container and sort it out in the code
+i think it may be useful to me to have "alchemical_items.json" be a weighted list that points at the subcategories
+that second one
+
+-grab all the data for items
+  done
+-grab the table for treasure by level
+  done
+-***Remove all the thead stuff up to tbody, then kill all the image tags with: f: <img alt=".*"> r: null
+  done
+-deal will null textcontent values
+  done i think? test
+  done
+-set up automated conversion so i dont have to type 40 filenames
+  done, but test minimally to make sure it went through
+  done
+CONVERSION IS DONE
+-set inputs- level, xp, cache, cache size, players, include_list
+  players/xp determines column
+  cache and cache size determines column
+  level determines row
+  custom include list- make it either rolling on a table or a table that hits other tables, like tableroller i guess
+-convert the html tables into json via reproducible script for updating if it becomes necessary
+  done: Remove all the thead stuff up to tbody, then kill all the image tags with: f: <img alt=".*"> r: null
+-convert the table for treasure by level to json by hand(?)
+  done
+-port the table roller rules in from 1e
+-spells... grab from table view like items
+
+
+ok so its a little different- i dont need to drill down at all
+basically its only once, right? im not assigning weights to the items in the json
+we're assigning weights to the map files
+so we'd say "equipment.json" which would specify weights to subcategories
+so lets specify those now
+
+how bout for armor and weapons we display the item plus the possible chosen benefit and we decide on the fly if it's worth it by putting the price next to it
+
+armor
+  armor_base_armor
+    then possible armor_basic_magic_armor
+      then possible runes_armor_property_runes
+      then possible armor_precious_material_armor
+  or armor_specific_magic_armor
+
+weapons
+  weapons_base_weapons
+    then possible weapons_basic_magic_weapons
+      then possible runes_weapon_property_runes
+      then possible weapons_precious_material_weapons
+  or weapons_specific_magic_weapons
+
+equipment
+  adventuring gear
+  armor
+  weapons
+
+
+ok i can roll on one table from a map, hypothetically many from a map
+
+now i need to work on the then clause as a bonus
+and on the multiples

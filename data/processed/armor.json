@@ -1,0 +1,11 @@
+[
+  {
+    "name": "armor_base_armor",
+    "then": ["armor_basic_magic_armor","runes_armor_property_runes","armor_precious_material_armor"],
+    "weight":66
+  },
+  {
+    "name": "armor_specific_magic_armor",
+    "weight": 34
+  }
+]
