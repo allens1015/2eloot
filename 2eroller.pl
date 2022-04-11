@@ -6,7 +6,7 @@ use Data::Dumper;
 my ($cache,$cs_word);
 my $level = 1;
 my $xp = "l";
-my $price = 0;
+my $price;
 my $type = "armor";
 use constant{
   DATAPATH => "data/processed/"
@@ -41,7 +41,7 @@ if($price) {
 }
 
 # set default aliases and maps
-my @maps_arr = ("armor");
+my @maps_arr = ("armor","weapons");
 my $map_flag = 0;
 my %maps_h = map { $_ => 1 } @maps_arr;
 if(exists($maps_h{$type})) {
@@ -49,7 +49,7 @@ if(exists($maps_h{$type})) {
 }
 
 # get the origin table
-my $origin_filepath = DATAPATH."/$type.json";
+my $origin_filepath = DATAPATH."$type.json";
 # check that the origin exists
 unless(-e $origin_filepath) {
   print "can't find $origin_filepath\n";
@@ -64,7 +64,7 @@ my $remaining_price = $selected_price_limit_int;
 my @loot;
 my $i = 0;
 while($remaining_price > 0) {
-  last if $i > 10;
+  last if $i > 50;
 
   # if you're lookin up a map...
   if($map_flag) {
@@ -106,10 +106,11 @@ while($remaining_price > 0) {
           ($selected_loot_str,$temp_remaining_price) = &roll_for_loot($loot_table_path,$remaining_price,$level);
 
           undef $valid if $loot[-1] eq $selected_loot_str;
+          # print "valid: $valid // because ".$loot[-1]." cmp $selected_loot_str\n";
 
           if($selected_loot_str && $valid) {
             $remaining_price = $temp_remaining_price;
-            push(@loot,$selected_loot_str);
+            push(@loot,"\t$selected_loot_str");
           }
         }
         
@@ -220,6 +221,10 @@ sub roll_for_loot {
     my $core_count = 0;
     my $done;
 
+    # if($filepath =~ /scroll/) {
+    #   print Dumper @sorted_table;
+    # }
+
     while(!$done) {
       last if $loot_i > 0;
       my $sorted_table_len = (scalar @sorted_table)-1;
@@ -325,7 +330,7 @@ sub get_xp_word {
 # ------------------------------
 sub rng {
   my ($max) = @_;
-  return int(rand($max));
+  return int(rand($max)+0.5);
 }
 
 # ------------------------------
