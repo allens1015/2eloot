@@ -8,5 +8,13 @@
   {
     "name": "weapons_specific_magic_weapons",
     "weight": 34
+  },
+  {
+    "name": "alchemical_items_alchemical_ammunition",
+    "weight": 10
+  },
+  {
+    "name": "consumables_magical_ammunition",
+    "weight": 10
   }
 ]

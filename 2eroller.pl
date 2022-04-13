@@ -41,7 +41,7 @@ if($price) {
 }
 
 # set default aliases and maps
-my @maps_arr = ("armor","weapons");
+my @maps_arr = ("armor","weapons","equipment","consumables","magic");
 my $map_flag = 0;
 my %maps_h = map { $_ => 1 } @maps_arr;
 if(exists($maps_h{$type})) {
@@ -65,6 +65,9 @@ my @loot;
 my $i = 0;
 while($remaining_price > 0) {
   last if $i > 50;
+
+  my $loot_length = scalar @loot;
+  last if $loot_length > 10;
 
   # if you're lookin up a map...
   if($map_flag) {
@@ -93,17 +96,19 @@ while($remaining_price > 0) {
       my $then_count = 0;
       foreach my $clause (@thens) {
         my $then_roll = &rng(100)+1;
-        my $valid_then = 1 if $then_roll <= $then_weights[$then_count];
 
-        if($valid_then) {
+        if($then_roll <= $then_weights[$then_count]) {
+          # print "$then_roll is <= ".$then_weights[$then_count]."\n";
           my $temp_remaining_price = $remaining_price;
           my $valid = 1;
           $loot_table_path = DATAPATH.$clause.".json";
+          # print "tryin $loot_table_path\n";
           unless(-e $loot_table_path) {
             print "can't find loot table path $loot_table_path from type $type\n";
           }
 
           ($selected_loot_str,$temp_remaining_price) = &roll_for_loot($loot_table_path,$remaining_price,$level);
+          # print "picked $selected_loot_str\n";
 
           undef $valid if $loot[-1] eq $selected_loot_str;
           # print "valid: $valid // because ".$loot[-1]." cmp $selected_loot_str\n";
@@ -151,7 +156,7 @@ print "Remaining money: $remaining_price gp\n";
 # ------------------------------
 sub get_a_spell {
   my ($spell_item_str, $spell_item_type) = @_;
-  print "checkin $spell_item_str\n";
+  # print "checkin $spell_item_str\n";
   my ($picked_spell,$picked_spell_str,$spell_level);
   my $source_json = DATAPATH."spells.json";
 
@@ -198,9 +203,13 @@ sub get_map_result {
   my $total_weight = 0;
   my @breakpoints;
   foreach my $row (@origin_arr) {
-    my $breakpoint = $row->{weight} + $total_weight;
+    my $row_weight = $row->{weight};
+    if(!$row_weight) {
+      $row_weight = 1;
+    }
+    my $breakpoint = $row_weight + $total_weight;
     push(@breakpoints,$breakpoint);
-    $total_weight += $row->{weight};
+    $total_weight += $row_weight;
   }
   my $roll = &rng($total_weight);
 
@@ -251,8 +260,10 @@ sub roll_for_loot {
     @price_gated_table = @level_gated_table;
   }
 
-  # print "beginning check price gated...\n";
-  # print Dumper @price_gated_table;
+  # if($filepath =~ /basic_magic/) {
+  #   print "beginning check price gated...\n";
+  #   print Dumper @price_gated_table;
+  # }
 
   # if there's anything left
   if(scalar @price_gated_table) {
@@ -274,8 +285,10 @@ sub roll_for_loot {
       last if $loot_i > 0;
       my $sorted_table_len = (scalar @sorted_table)-1;
       my $selection = &rng($sorted_table_len);
-      # print "trying selection $selection...\n";
-      # print Dumper $sorted_table[$selection];
+      # if($filepath =~ /basic_magic/) {
+      #   print "trying selection $selection...\n";
+      #   print Dumper $sorted_table[$selection];
+      # }
       my $picked = $sorted_table[$selection];
       my $price = $picked->{int_price};
 
@@ -375,7 +388,7 @@ sub get_xp_word {
 # ------------------------------
 sub rng {
   my ($max) = @_;
-  return int(rand($max)+0.5);
+  return int(rand($max));
 }
 
 # ------------------------------
