@@ -1,0 +1,60 @@
+[{
+  "name": "consumables_potions"
+},
+{
+  "name": "consumables_scrolls"
+},
+{
+  "name": "wands_magic_wands"
+},
+{
+  "name": "wands_specialty_wands"
+},
+{
+  "name": "weapons_specific_magic_weapons"
+},
+{
+  "name": "armor_specific_magic_armor"
+},
+{
+  "name": "shields_specific_shields"
+},
+{
+  "name": "runes_accessory_runes"
+},
+{
+  "name": "runes_armor_property_runes"
+},
+{
+  "name": "runes_fundamental_armor_runes"
+},
+{
+  "name": "runes_fundamental_weapon_runes"
+},
+{
+  "name": "runes_weapon_property_runes"
+},
+{
+  "name": "staves"
+},
+{
+  "name": "worn_items_apex_items"
+},
+{
+  "name": "worn_items_companion_items"
+},
+{
+  "name": "worn_items_eidolon_items"
+},
+{
+  "name": "worn_items_other_worn_items"
+},
+{
+  "name": "artifacts"
+},
+{
+  "name": "held_items"
+},
+{
+  "name": "alchemical_items_alchemical_elixirs"
+}]

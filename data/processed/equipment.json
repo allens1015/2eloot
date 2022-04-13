@@ -1,0 +1,36 @@
+[
+  {
+    "name": "armor_base_armor",
+    "then": ["armor_basic_magic_armor","runes_armor_property_runes","armor_precious_material_armor"],
+    "thenWeights": [90,40,20]
+  },
+  {
+    "name": "armor_specific_magic_armor"
+  },
+  {
+    "name": "weapons_base_weapons",
+    "then": ["weapons_basic_magic_weapons","runes_weapon_property_runes","weapons_precious_material_weapons"],
+    "thenWeights": [90,40,20]
+  },
+  {
+    "name": "weapons_specific_magic_weapons"
+  },
+  {
+    "name": "adventuring_gear"
+  },
+  {
+    "name": "snares"
+  },
+  {
+    "name": "alchemical_items_alchemical_tools"
+  },
+  {
+    "name": "held_items"
+  },
+  {
+    "name": "consumables_magical_ammunition"
+  },
+  {
+    "name": "alchemical_items_alchemical_ammunition"
+  }
+]
