@@ -47,7 +47,13 @@ CONVERSION IS DONE
 -convert the table for treasure by level to json by hand(?)
   done
 -port the table roller rules in from 1e
+  done- different, fixed, im sure there's bugs
 -spells... grab from table view like items
+-grab the spell data
+  done
+-apply spell choices to wands and scrolls
+-make the other map files- equipment, magic junk, i dunno
+-check on weapons again, that boy aint right- duplicating prior entries and applying to specific weapons
 
 
 ok so its a little different- i dont need to drill down at all

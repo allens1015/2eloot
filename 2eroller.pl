@@ -127,6 +127,13 @@ while($remaining_price > 0) {
     ($selected_loot_str,$remaining_price) = &roll_for_loot($loot_table_path,$remaining_price,$level);
     if($selected_loot_str) {
       push(@loot, $selected_loot_str);
+      if($loot_table_path =~ /wands_magic_wands/ || $loot_table_path =~ /consumables_scrolls/) {
+        my $spell_str = &get_a_spell($selected_loot_str);
+        if($spell_str) {
+          $spell_str = "\t$spell_str";
+          push(@loot, $spell_str);
+        }
+      }
     }
   }
 
@@ -140,6 +147,44 @@ print Dumper @loot;
 print "Remaining money: $remaining_price gp\n";
 # print "price limit gp: $selected_price_limit\n";
 # print "price limit int: $selected_price_limit_int\n";
+
+# ------------------------------
+sub get_a_spell {
+  my ($spell_item_str, $spell_item_type) = @_;
+  print "checkin $spell_item_str\n";
+  my ($picked_spell,$picked_spell_str,$spell_level);
+  my $source_json = DATAPATH."spells.json";
+
+  my $spell_list_str = &get_json($source_json);
+  my $spell_list_json = decode_json($spell_list_str);
+  my @spell_list_arr = @{$spell_list_json};
+
+  if($spell_item_str =~ /^(\d+).*/) {
+    $spell_level = int($1);
+  }
+  else {
+    $spell_item_str =~ /Magic Wand \((\d+).*/;
+    $spell_level = int($1);
+  }
+
+  my @valid_spells;
+  foreach my $spell (@spell_list_arr) {
+    if($spell->{level} eq $spell_level) {
+      push(@valid_spells,$spell);
+    }
+  }
+
+  my $spell_table_len = (scalar @valid_spells)-1;
+  my $selection = &rng($spell_table_len);
+  $picked_spell = $valid_spells[$selection];
+  $picked_spell_str = $picked_spell->{name}." (".$picked_spell->{level}.")";
+
+  if($picked_spell) {
+    return $picked_spell_str;
+  }
+
+  return;
+}
 
 # ------------------------------
 sub get_map_result {
