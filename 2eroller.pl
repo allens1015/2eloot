@@ -12,6 +12,8 @@ use constant{
   DATAPATH => "data/processed/"
 };
 
+# hey whats up
+
 foreach my $arg (@ARGV) {
 	if($arg =~ /--l=(\d+)/) { $level = $1; }
   if($arg =~ /--xp=([lmseLMSE])/) { $xp = $1; }
