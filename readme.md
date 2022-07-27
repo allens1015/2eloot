@@ -1,0 +1,5 @@
+--l to set level of encounter
+--xp instead to set xp for encounter, [lmseLMSE]
+--price to set custom max gold allocated for all loot
+--t to set the table to roll on- 
+--cache is unused
